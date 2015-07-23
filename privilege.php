@@ -167,7 +167,7 @@ if($_SESSION['privilege']){
 		        	<th data-field='PRIVI_TS' data-visible='false' data-formatter='timeConverter'>วันที่สร้างข่าว</th>
 		        	<th data-field='POST_TS' data-visible='false' data-formatter='timeConverter'>แก้ไขครั้งล่าสุด</th>
 		        	<th data-formatter='modify' data-align='center'>แก้ไข</th>
-		        	<th data-formatter='del' data-align='center'>ลบ</th>
+		        	<th data-formatter='del' data-align='center' data-events='operateEvents'>ลบ</th>
 		        </tr>
 		    </thead>
 		    <tbody></tbody>
@@ -205,11 +205,34 @@ if($_SESSION['privilege']){
 		return '<a href="#"><i class="fa fa-pencil fa-fw"></i> Edit</a>';
 	}
 	function del(){
-		return '<a class="btn btn-danger" href="#"><i class="fa fa-trash-o fa-lg"></i> Delete</a>';
+		return '<a href="javascript:void(0)" class="del" title="del"> <i class="btn btn-danger"><i class="fa fa-trash-o fa-lg"></i> Delete</i></a>';
 	}
 	function status(){
 		return '<i class="fa fa-pencil-square-o"></i>';
 	}
+	window.operateEvents = {
+        'click .del': function (e, value, row, index) {
+            if(confirm('Are you sure to delete topic '+ row.PRIVI_TITLE) == true){
+                function newDoc() {
+                    var redirect = 'input_to_privilege.php';
+                    $.extend(
+                    {
+                        redirectPost: function(location, args)
+                        {
+                            var form = '';
+                            $.each( args, function( key, value ) {
+                                form += '<input type="hidden" name="'+key+'" value="'+value+'">';
+                            });
+                            $('<form action="'+location+'" method="POST">'+form+'</form>').appendTo('body').submit();
+                        }
+                    });
+                    $.redirectPost(redirect, { del : "true", postTS : row.POST_TS });
+                    // jquery extend function
+                }
+                newDoc();
+            }
+        }
+    };
 </script>
 <?php
 }else{
