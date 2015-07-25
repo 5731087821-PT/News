@@ -116,12 +116,65 @@ td div{
                     <th data-field='MOD' data-formatter='overflowScroll'>ผู้ดูแล</th>
                     <th data-field='NEWS_TS' data-visible='false' data-formatter='timeConverter'>วันที่สร้างข่าว</th>
                     <th data-field='POST_TS' data-visible='false' data-formatter='timeConverter'>แก้ไขครั้งล่าสุด</th>
-                    <th data-formatter='modify' data-align='center'>แก้ไข</th>
+                    <th data-formatter='modify' data-align='center' data-events='operateEvents'>แก้ไข</th>
                     <th data-formatter='del' data-align='center' data-events='operateEvents'>ลบ</th>
                 </tr>
             </thead>
             <tbody></tbody>
             </table>
+
+            <!-- Modal -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form id='myForm' name="myForm" data-toggle="validator" action="input_to_news.php" method="POST" enctype="multipart/form-data">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="myModalLabel">แก้ไขข่าว</h4>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" name="del" value="false" hidden>
+                                <input id='editNewsTS' type="text" name="newsTS" hidden>
+                                <input id='editPostTS' type="text" name="postTS" hidden>
+                                <div class="form-group">
+                                    <label class="control-label">หัวข้อข่าว</label>
+                                    <input id='editTitle' name='title' type="topic" size='50' class="form-control" placeholder="Enter title" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">เนื้อหาข่าว</label>
+                                    <textarea id='editMessage' name='message' class="form-control" rows="10" placeholder='Enter content' required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>เวลาเริ่มกิจกรรม</label>
+                                    <div class="input-group date form_datetime col-md-5" data-date-format="dd MM yyyy - HH:ii" data-link-field="dtp_input1">
+                                        <input name='eventStart' class="form-control" size="16" type="text" placeholder='Click to select start time' readonly>
+                                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                                        <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>เวลาสิ้นสุดกิจกรรม</label>
+                                    <div class="input-group date form_datetime col-md-5" data-date-format="dd MM yyyy - HH:ii" data-link-field="dtp_input1">
+                                        <input name='eventEnd' class="form-control" size="16" type="text" placeholder='Click to select end time' readonly>
+                                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                                        <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>สถานที่จัดกิจกรรม</label>
+                                    <div class="input-group col-md-5">
+                                        <input id='editLocation' name='location' class="form-control" type="text" placeholder='Enter location'>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button id='change' type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- /.container-fluid -->
     </div>
@@ -152,7 +205,7 @@ td div{
         return '-';
     }
     function modify(){
-        return '<a href="#"><i class="fa fa-pencil fa-fw"></i> Edit</a>';
+        return '<a href="javascript:void(0)" class="edit" title="edit"><i class="fa fa-pencil fa-fw"></i> Edit</a>';
     }
     function del(){
         return '<a href="javascript:void(0)" class="del" title="del"> <i class="btn btn-danger"><i class="fa fa-trash-o fa-lg"></i> Delete</i></a>';
@@ -181,6 +234,17 @@ td div{
                 }
                 newDoc();
             }
+        },
+        'click .edit': function (e, value, row, index) {
+            $('#editNewsTS').val(row.NEWS_TS);
+            $('#editPostTS').val(row.POST_TS);
+            $('#editTitle').val(row.NEWS_TITLE);
+            $('#editMessage').html(row.NEWS_MSG);
+            $('#editLocation').val(row.NEWS_LOCATION);
+            $('#myModal').modal();
+            $('#change').click(function(){
+                $('#myForm').submit();
+            });
         }
     };
 </script>
@@ -191,6 +255,14 @@ td div{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/bootstrap-table.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/extensions/export/bootstrap-table-export.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.8.1/locale/bootstrap-table-th-TH.min.js"></script>
+<script src="./js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+<script src="./js/locales/bootstrap-datetimepicker.fr.js" charset="UTF-8"></script>
+<script type="text/javascript">
+    $(".form_datetime").datetimepicker({
+        format: 'yyyy/mm/dd hh:ii',
+        autoclose: 1
+    });
+</script>
 </body>
 </html>
 <?php

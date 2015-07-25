@@ -15,8 +15,8 @@ if($_SESSION['news']&&$_SESSION['name']){
 			if($priority=="true"&&($eventStart!=null||$eventStart!=""||$eventEnd!=null||$eventEnd!="")){
 				//#####NEWS IMPORTANT AND HAVE EVENT TIME ADD TO SYSTEM CALENDAR#####	
 				if($edit){
-					$savingEdit[0]->set("TO_CALEN", true);
-					$savingEdit[0]->set("SYS_CALEN", true);
+					//$savingEdit[0]->set("TO_CALEN", true);
+					//$savingEdit[0]->set("SYS_CALEN", true);
 				}else{
 					$saving->set("TO_CALEN", true);
 					$saving->set("SYS_CALEN", true);
@@ -24,8 +24,8 @@ if($_SESSION['news']&&$_SESSION['name']){
 			}else{
 				//#####NEWS NOT IMPORTANT AND HAVE EVENT TIME NOT ADD TO SYSTEM CALENDAR#####
 				if($edit){
-					$savingEdit[0]->set("TO_CALEN", false);
-					$savingEdit[0]->set("SYS_CALEN", false);
+					//$savingEdit[0]->set("TO_CALEN", false);
+					//$savingEdit[0]->set("SYS_CALEN", false);
 				}else{
 					$saving->set("TO_CALEN", false);
 					$saving->set("SYS_CALEN", false);
@@ -38,8 +38,8 @@ if($_SESSION['news']&&$_SESSION['name']){
 			if(is_Numeric($calendar)){
 				$calendar==0?$timestamp=0:$timestamp=$calendar;
 			}else{
-				list($year, $month, $day, $hour, $minute) = split('[/ :]', $calendar);
-				$timestamp = mktime($hour-7,$minute,0,$month,$day,$year);
+				list($year, $month, $day, $hour, $minute) = preg_split('/[ \:\/]/', $calendar);
+				$timestamp = mktime($hour+1,$minute,0,$month,$day,$year);
 			}
 			$saving->set($field, $timestamp);
 			$savingLog->set($field, $timestamp);
@@ -129,11 +129,11 @@ if($_SESSION['news']&&$_SESSION['name']){
 			//#####NOTIFICATION#####
 			$saving->set("PRIORITY", true);
 			$savingLog->set("PRIORITY", true);
-			if($edit) $savingEdit[0]->set("PRIORITY", true);
+			//if($edit) $savingEdit[0]->set("PRIORITY", true);
 		}else{
 			$saving->set("PRIORITY", false);
 			$savingLog->set("PRIORITY", false);
-			if($edit) $savingEdit[0]->set("PRIORITY", false);
+			//if($edit) $savingEdit[0]->set("PRIORITY", false);
 		}
 
 		if(empty($_FILES["fileToUpload"]["name"])){
@@ -195,7 +195,7 @@ if($_SESSION['news']&&$_SESSION['name']){
 				 	} 
 		    }
 		    $saving->set("NEWS_IMG", $target_file);
-		    if($edit) $savingEdit[0]->set("NEWS_IMG", $target_file);
+		    //if($edit) $savingEdit[0]->set("NEWS_IMG", $target_file);
 		}
 
 		
@@ -270,6 +270,7 @@ if($_SESSION['news']&&$_SESSION['name']){
 	exit(0);
 }
 ?>
+
 <html>
 <head>
 <meta http-equiv="Refresh" content="5;url=index.php">
