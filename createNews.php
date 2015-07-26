@@ -88,7 +88,7 @@ if($_SESSION['news']||$_SESSION['privilege']){
 		    </div>
 		    <!-- /.row -->
 
-		    <form name="myForm" data-toggle="validator" action="input_to_news.php" method="POST" enctype="multipart/form-data">
+		    <form id='myForm' name="myForm" data-toggle="validator" action="input_to_news.php" method="POST" enctype="multipart/form-data">
 			  	<input type="text" name="del" value="false" hidden>
 			  	<input type="text" name="newsTS" hidden>
 				<input type="text" name="postTS" hidden>
@@ -159,6 +159,12 @@ if($_SESSION['news']||$_SESSION['privilege']){
         format: 'yyyy/mm/dd hh:ii',
         autoclose: 1
     });
+	$('#myForm').on('submit', function() {
+		if($(this).find('button[type="submit"]').attr('class')=='btn btn-primary'){
+			$(this).find('button[type="submit"]').attr('disabled','disabled');
+		}
+	});
+
 </script>
 </body>
 </html>
