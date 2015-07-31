@@ -4,14 +4,16 @@ require '../connected.php';
 
 use Parse\ParseQuery;
 use Parse\ParseObject;
-	
-	//get lastsynctime and convert to int because method get receive string COMMENT JOE//
-	$LastSyncTime = 0;
-	//list($year, $month, $day, $hour, $minute, $second) = split('[/ :]', $LastSyncTime); 
-	//$LastSyncTime = $year . $month . $day . $hour . $minute . $second;
+
+	if($_GET&&$_GET["LastSyncTime"]>0){
+		$LastSyncTime = intval($_GET["LastSyncTime"]);
+	}else{
+		$LastSyncTime = 0;
+	}
 
 	$queryAdd = new ParseQuery("NEWS");
 	$queryDel = new ParseQuery("NEWS");
+	$queryEdit = new ParseQuery("mod_log");
 
 	//do this if app was runing first time COMMENT JOE//
 	if($LastSyncTime==0){
@@ -33,10 +35,14 @@ use Parse\ParseObject;
 		$queryAdd->equalTo("DEL", 0);
 		$queryDel->equalTo("DEL", 1);
 		$queryDel->descending("POST_TS");
-		$queryDel->limit(30);
+		//$queryDel->limit(15);
+		$queryEdit->greaterThan("OLD_POST_TS", 0);
+		$queryEdit->descending("OLD_POST_TS");
+		//$queryEdit->limit(15);
 		try {
 		  	$result = $queryAdd->find();
 		  	$resultDel = $queryDel->find();
+		  	$resultEdit = $queryEdit->find();
 		  	// The object was retrieved successfully.
 		} catch (ParseException $ex) {
 		  	// The object was not retrieved successfully.
@@ -66,11 +72,15 @@ use Parse\ParseObject;
 	    	//json_decodde -> string -> obj
 		}
 
-	    if(count($resultDel) > 0){
+	    if(count($resultDel) > 0 || count($resultEdit) > 0){
 	    	$toDelete = array();
 		    for($c=0;$c<count($resultDel);$c++){
 	    		$toDelete[$c]["POST_TS"] = $resultDel[$c]->get("POST_TS");
 	    	}
+	    	for($c=0;$c<count($resultEdit);$c++){
+	    		$toDelete[$c+count($resultDel)]["POST_TS"] = $resultEdit[$c]->get("OLD_POST_TS");
+	    	}
+	    	rsort($toDelete);
 	    	$toEncode["toDelete"] = $toDelete;
     	}else{
     		$toDelete[0]["POST_TS"] = 0;

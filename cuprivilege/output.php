@@ -5,54 +5,46 @@ require '../connected.php';
 use Parse\ParseQuery;
 use Parse\ParseObject;
 
-$LastSyncTime = 0;
+	if($_GET&&$_GET["LastSyncTime"]>0){
+		$LastSyncTime = intval($_GET["LastSyncTime"]);
+	}else{
+		$LastSyncTime = 0;
+	}
+
+	$queryAdd = new ParseQuery("PRIVILEGE");
+	$queryDel = new ParseQuery("PRIVILEGE");
+	$queryEdit = new ParseQuery("mod_log_privilege");
 
 	if($LastSyncTime==0){
-		$query = new ParseQuery("PRIVILEGE");
-		$query -> equalTo("DEL", 0);
-		$query->descending("POST_TS");
+		$queryAdd -> equalTo("DEL", 0);
+		$queryAdd->descending("POST_TS");
 		try {
-		  	$result = $query->find();
+		  	$result = $queryAdd->find();
 		  	// The object was retrieved successfully.
 		} catch (ParseException $ex) {
 		  	// The object was not retrieved successfully.
 		  	// error is a ParseException with an error code and message.
 		}
 	} elseif($LastSyncTime > 0) {
-		//list($year, $month, $day, $hour, $minute, $second) = split('[/ :]', $LastSyncTime); 
-		//$LastSyncTime = $year . $month . $day . $hour . $minute . $second;
-		/*$time = strtotime($LastSyncTime);
-		echo $time;
-		$time = strtotime("2015-01-22 21:00:00");
-		echo $time;
-		$time = strtotime("2015-01-24 21:41:06");
-		echo $time;
-		echo gmdate("Y-m-d H:i:s", $time);
-		echo date("Y-m-d H:i:s");
-		$time = time();
-		echo $time;
-		echo gmdate("Y-m-d H:i:s", time()+(7*60*60));
-		*/
-		//$sql = "SELECT postTS FROM news";
-		//$result = $conn->query($sql);
-		//echo $result;
-
-		$query = new ParseQuery("PRIVILEGE");
-		$query -> equalTo("DEL", 0);
-		$query -> greaterThan($LastSyncTime);
-		$query -> descending("POST_TS");
+		$queryAdd -> greaterThan("POST_TS", $LastSyncTime);
+		$queryAdd -> descending("POST_TS");
+		$queryAdd -> equalTo("DEL", 0);
+		$queryDel->equalTo("DEL", 1);
+		$queryDel->descending("POST_TS");
+		//$queryDel->limit(15);
+		$queryEdit->greaterThan("OLD_POST_TS", 0);
+		$queryEdit->descending("OLD_POST_TS");
+		//$queryEdit->limit(15);
 		try {
-		  	$result = $query->find();
+		  	$result = $queryAdd->find();
+		  	$resultDel = $queryDel->find();
+		  	$resultEdit = $queryEdit->find();
 		  	// The object was retrieved successfully.
 		} catch (ParseException $ex) {
 		  	// The object was not retrieved successfully.
 		  	// error is a ParseException with an error code and message.
 		}
 	}
-    //$stmt = $conn->prepare("SELECT newsTS,postTS,data FROM news WHERE `delete` = 0 ORDER BY u_id desc");
-    //$stmt -> execute();
-    //$stmt->bind_result($result);
-
 
 	if (count($result) > 0) {
 		if(count($result)>0){
@@ -75,6 +67,21 @@ $LastSyncTime = 0;
 	    	//json_encode -> obj -> string
 	    	//json_decodde -> string -> obj
 		}
+
+    	if(count($resultDel) > 0||count($resultEdit) > 0){
+	    	$toDelete = array();
+		    for($c=0;$c<count($resultDel);$c++){
+	    		$toDelete[$c]["POST_TS"] = $resultDel[$c]->get("POST_TS");
+	    	}
+	    	for($c=0;$c<count($resultEdit);$c++){
+	    		$toDelete[$c+count($resultDel)]["POST_TS"] = $resultEdit[$c]->get("OLD_POST_TS");
+	    	}
+	    	rsort($toDelete);
+	    	$toEncode["toDelete"] = $toDelete;
+    	}else{
+    		$toDelete[0]["POST_TS"] = 0;
+    		$toEncode["toDelete"] = $toDelete;
+    	}
     	echo json_encode($toEncode);
 	} else {
     	echo "0 results";
